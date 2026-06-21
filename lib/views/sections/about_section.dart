@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/utils/responsive_helper.dart';
 import '../../core/constants/app_colors.dart';
 import '../../widgets/section_title.dart';
 
@@ -9,37 +10,53 @@ class AboutSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 768;
+    final isMobile = Responsive.isMobile(context);
+    final isTablet = Responsive.isTablet(context);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 100, vertical: 100),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : (isTablet ? 50 : 100),
+        vertical: 100,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SectionTitle(title: "About Me"),
-          isMobile
-              ? Column(
-                  children: [
-                    _buildAboutImage(),
-                    const SizedBox(height: 40),
-                    _buildAboutContent(context),
-                  ],
-                )
-              : Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: _buildAboutImage()),
-                    const SizedBox(width: 60),
-                    Expanded(flex: 2, child: _buildAboutContent(context)),
-                  ],
-                ),
+          Responsive(
+            mobile: Column(
+              children: [
+                _buildAboutImage(context),
+                const SizedBox(height: 40),
+                _buildAboutContent(context),
+              ],
+            ),
+            tablet: Column(
+              children: [
+                _buildAboutImage(context),
+                const SizedBox(height: 60),
+                _buildAboutContent(context),
+              ],
+            ),
+            desktop: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _buildAboutImage(context)),
+                const SizedBox(width: 60),
+                Expanded(flex: 2, child: _buildAboutContent(context)),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildAboutImage() {
+  Widget _buildAboutImage(BuildContext context) {
+    final isSmallMobile = Responsive.isSmallMobile(context);
+    final isMobile = Responsive.isMobile(context);
+    final imageSize = isSmallMobile ? 250.0 : (isMobile ? 300.0 : 400.0);
+    final frameOffset = isSmallMobile ? -10.0 : -15.0;
+
     return FadeInLeft(
       child: Center(
         child: Stack(
@@ -47,11 +64,11 @@ class AboutSection extends StatelessWidget {
           children: [
             // Decorative background frame
             Positioned(
-              right: -20,
-              bottom: -20,
+              right: frameOffset,
+              bottom: frameOffset,
               child: Container(
-                height: 400,
-                width: 400,
+                height: imageSize,
+                width: imageSize,
                 decoration: BoxDecoration(
                   border: Border.all(color: AppColors.secondaryAccent.withOpacity(0.5), width: 2),
                   borderRadius: BorderRadius.circular(20),
@@ -60,8 +77,8 @@ class AboutSection extends StatelessWidget {
             ),
             // Main Image Container
             Container(
-              height: 400,
-              width: 400,
+              height: imageSize,
+              width: imageSize,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppColors.primaryAccent, width: 2),
@@ -103,7 +120,7 @@ class AboutSection extends StatelessWidget {
           _buildStatGrid(context),
           const SizedBox(height: 40),
           ElevatedButton(
-            onPressed: () => _launchURL('assets/umair_ahmad_cv.pdf'),
+            onPressed: () => _launchURL('https://raw.githubusercontent.com/UmairAhmad03003/my_portfolio/main/assets/umair_ahmad_cv.pdf'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryAccent,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
@@ -118,10 +135,13 @@ class AboutSection extends StatelessWidget {
 
   void _launchURL(String url) async {
     try {
-      await launchUrl(
-        Uri.parse(url),
-        mode: LaunchMode.platformDefault,
-      );
+      final Uri uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      }
     } catch (e) {
       debugPrint('Could not launch $url');
     }
@@ -140,10 +160,10 @@ class AboutSection extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: constraints.maxWidth < 600 ? 2 : 4,
+          crossAxisCount: constraints.maxWidth < 450 ? 1 : (constraints.maxWidth < 850 ? 2 : 4),
           crossAxisSpacing: 20,
           mainAxisSpacing: 20,
-          childAspectRatio: 1.5,
+          childAspectRatio: constraints.maxWidth < 450 ? 2.5 : 1.5,
         ),
         itemCount: stats.length,
         itemBuilder: (context, index) {

@@ -42,7 +42,6 @@ class _SkillCardState extends State<SkillCard> {
         transform: _isHovered ? (Matrix4.identity()..translate(0, -10)) : Matrix4.identity(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Row(
               children: [

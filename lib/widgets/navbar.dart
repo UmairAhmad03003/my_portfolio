@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/constants/app_colors.dart';
+import '../core/utils/responsive_helper.dart';
 import '../viewmodels/scroll_viewmodel.dart';
 import '../viewmodels/theme_viewmodel.dart';
 
@@ -14,10 +15,11 @@ class Navbar extends StatelessWidget {
     final themeViewModel = context.watch<ThemeViewModel>();
     final isScrolled = scrollViewModel.isNavbarScrolled;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isMobile = Responsive.isMobile(context);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      height: 80,
+      height: isMobile ? 70 : 80,
       decoration: BoxDecoration(
         color: isScrolled 
             ? (isDark ? Colors.black.withOpacity(0.7) : Colors.white.withOpacity(0.7)) 
@@ -33,16 +35,18 @@ class Navbar extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: isScrolled ? 10 : 0, sigmaY: isScrolled ? 10 : 0),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 50),
+            padding: EdgeInsets.symmetric(
+              horizontal: Responsive.isSmallMobile(context) ? 15 : (Responsive.isMobile(context) ? 20 : 50),
+            ),
             child: Row(
               children: [
-                _buildLogo(),
+                _buildLogo(context),
                 const Spacer(),
-                if (MediaQuery.of(context).size.width > 1100)
+                if (!isMobile)
                   _buildNavLinks(context, scrollViewModel)
                 else
                   _buildMobileMenu(context, scrollViewModel),
-                const SizedBox(width: 20),
+                const SizedBox(width: 10),
                 _buildThemeSelector(context, themeViewModel),
               ],
             ),
@@ -52,11 +56,12 @@ class Navbar extends StatelessWidget {
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildLogo(BuildContext context) {
+    final isSmallMobile = Responsive.isSmallMobile(context);
     return Text(
       'UA',
       style: TextStyle(
-        fontSize: 32,
+        fontSize: isSmallMobile ? 24 : 32,
         fontWeight: FontWeight.bold,
         color: AppColors.primaryAccent,
         letterSpacing: 2,

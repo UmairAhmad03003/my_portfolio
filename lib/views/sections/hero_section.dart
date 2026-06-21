@@ -3,6 +3,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/utils/responsive_helper.dart';
 import '../../core/constants/app_colors.dart';
 import '../../viewmodels/scroll_viewmodel.dart';
 
@@ -12,35 +13,42 @@ class HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 768;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      height: size.height,
+      constraints: BoxConstraints(minHeight: size.height),
       width: size.width,
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 100),
-      child: isMobile
-          ? SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: size.height),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 120),
-                    _buildProfileImage(),
-                    const SizedBox(height: 40),
-                    _buildHeroContent(context, isMobile, isDark),
-                    const SizedBox(height: 100),
-                  ],
-                ),
-              ),
-            )
-          : Row(
-              children: [
-                Expanded(child: _buildHeroContent(context, isMobile, isDark)),
-                Expanded(child: _buildProfileImage()),
-              ],
-            ),
+      padding: EdgeInsets.symmetric(
+        horizontal: Responsive.isMobile(context) ? 20 : (Responsive.isTablet(context) ? 50 : 100),
+      ),
+      child: Responsive(
+        mobile: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 120),
+            _buildProfileImage(context),
+            const SizedBox(height: 40),
+            _buildHeroContent(context, true, isDark),
+            const SizedBox(height: 100),
+          ],
+        ),
+        tablet: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 120),
+            _buildProfileImage(context),
+            const SizedBox(height: 60),
+            _buildHeroContent(context, true, isDark),
+            const SizedBox(height: 100),
+          ],
+        ),
+        desktop: Row(
+          children: [
+            Expanded(child: _buildHeroContent(context, false, isDark)),
+            Expanded(child: _buildProfileImage(context)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -63,7 +71,7 @@ class HeroSection extends StatelessWidget {
           Text(
             "Umair Ahmad",
             style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                  fontSize: isMobile ? 40 : 64,
+                  fontSize: Responsive.isSmallMobile(context) ? 32 : (isMobile ? 40 : 64),
                   fontWeight: FontWeight.bold,
                   color: isDark ? AppColors.textPrimary : AppColors.textPrimaryLight,
                 ),
@@ -72,8 +80,8 @@ class HeroSection extends StatelessWidget {
           SizedBox(
             height: 40,
             child: DefaultTextStyle(
-              style: const TextStyle(
-                fontSize: 24,
+              style: TextStyle(
+                fontSize: Responsive.isSmallMobile(context) ? 20 : 24,
                 color: AppColors.secondaryAccent,
                 fontWeight: FontWeight.w500,
               ),
@@ -116,7 +124,13 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileImage() {
+  Widget _buildProfileImage(BuildContext context) {
+    final isSmallMobile = Responsive.isSmallMobile(context);
+    final isMobile = Responsive.isMobile(context);
+    final isTablet = Responsive.isTablet(context);
+    final imageSize = isSmallMobile ? 220.0 : (isMobile ? 280.0 : (isTablet ? 320.0 : 350.0));
+    final circleOffset = isSmallMobile ? 40.0 : 70.0;
+
     return FadeInRight(
       duration: const Duration(milliseconds: 1000),
       child: Center(
@@ -125,16 +139,16 @@ class HeroSection extends StatelessWidget {
           children: [
             // Decorative background circles
             Container(
-              height: 420,
-              width: 420,
+              height: imageSize + circleOffset,
+              width: imageSize + circleOffset,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.primaryAccent.withOpacity(0.2), width: 2),
               ),
             ),
             Container(
-              height: 380,
-              width: 380,
+              height: imageSize + (circleOffset / 2),
+              width: imageSize + (circleOffset / 2),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.secondaryAccent.withOpacity(0.4), width: 1),
@@ -142,8 +156,8 @@ class HeroSection extends StatelessWidget {
             ),
             // Main Image Container
             Container(
-              height: 350,
-              width: 350,
+              height: imageSize,
+              width: imageSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.primaryAccent, width: 6),

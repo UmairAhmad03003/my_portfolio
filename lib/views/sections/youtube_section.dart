@@ -77,13 +77,15 @@ class YoutubeSection extends StatelessWidget {
         style: const TextStyle(color: AppColors.textSecondary, fontSize: 16, height: 1.6),
       ),
       const SizedBox(height: 30),
-      Row(
-        mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
+      Wrap(
+        alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
+        spacing: isMobile ? 20 : 0,
+        runSpacing: 20,
         children: [
           _buildStat("219+", "Subscribers"),
-          _buildDivider(),
+          if (!isMobile) _buildDivider(),
           _buildStat("Programming", "Tech"),
-          _buildDivider(),
+          if (!isMobile) _buildDivider(),
           _buildStat("Flutter", "Tutorials"),
         ],
       ),
@@ -122,7 +124,7 @@ class YoutubeSection extends StatelessWidget {
 
   void _launchURL(String url) async {
     if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     }
   }
 }

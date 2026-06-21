@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../core/utils/responsive_helper.dart';
 import '../../core/constants/app_colors.dart';
 import '../../viewmodels/contact_viewmodel.dart';
 import '../../widgets/section_title.dart';
@@ -11,31 +13,42 @@ class ContactSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<ContactViewModel>();
-    final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 900;
+    final isMobile = Responsive.isMobile(context);
+    final isTablet = Responsive.isTablet(context);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 100, vertical: 100),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : (isTablet ? 50 : 100),
+        vertical: 100,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SectionTitle(title: "Get In Touch"),
-          isMobile
-              ? Column(
-                  children: [
-                    _buildContactInfo(context),
-                    const SizedBox(height: 60),
-                    _buildContactForm(context, viewModel),
-                  ],
-                )
-              : Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: _buildContactInfo(context)),
-                    const SizedBox(width: 80),
-                    Expanded(flex: 1, child: _buildContactForm(context, viewModel)),
-                  ],
-                ),
+          Responsive(
+            mobile: Column(
+              children: [
+                _buildContactInfo(context),
+                const SizedBox(height: 60),
+                _buildContactForm(context, viewModel),
+              ],
+            ),
+            tablet: Column(
+              children: [
+                _buildContactInfo(context),
+                const SizedBox(height: 60),
+                _buildContactForm(context, viewModel),
+              ],
+            ),
+            desktop: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _buildContactInfo(context)),
+                const SizedBox(width: 80),
+                Expanded(flex: 1, child: _buildContactForm(context, viewModel)),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -55,36 +68,43 @@ class ContactSection extends StatelessWidget {
           style: TextStyle(fontSize: 16, color: AppColors.textSecondary, height: 1.6),
         ),
         const SizedBox(height: 40),
-        _buildContactCard(Icons.email, "Email", "umairahmad03003@gmail.com"),
-        _buildContactCard(FontAwesomeIcons.whatsapp, "WhatsApp", "03003393940"),
-        _buildContactCard(FontAwesomeIcons.github, "GitHub", "github.com/UmairAhmad03003"),
-        _buildContactCard(FontAwesomeIcons.youtube, "YouTube", "@CodeFlowUmair"),
+        _buildContactCard(Icons.email, "Email", "umairahmad03003@gmail.com", 'mailto:umairahmad03003@gmail.com'),
+        _buildContactCard(FontAwesomeIcons.whatsapp, "WhatsApp", "03003393940", 'https://wa.me/923003393940'),
+        _buildContactCard(FontAwesomeIcons.github, "GitHub", "github.com/UmairAhmad03003", 'https://github.com/UmairAhmad03003'),
+        _buildContactCard(FontAwesomeIcons.youtube, "YouTube", "@CodeFlowUmair", 'https://youtube.com/@CodeFlowUmair'),
       ],
     );
   }
 
-  Widget _buildContactCard(IconData icon, String label, String value) {
+  Widget _buildContactCard(IconData icon, String label, String value, String url) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 25),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.primaryAccent.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: AppColors.secondaryAccent, size: 24),
-          ),
-          const SizedBox(width: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: InkWell(
+        onTap: () => _launchURL(url),
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
             children: [
-              Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
-              Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryAccent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: AppColors.secondaryAccent, size: 24),
+              ),
+              const SizedBox(width: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                  Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -181,5 +201,11 @@ class ContactSection extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _launchURL(String url) async {
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    }
   }
 }

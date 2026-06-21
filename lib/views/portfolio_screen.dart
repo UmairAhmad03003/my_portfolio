@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../core/utils/responsive_helper.dart';
 import '../core/constants/app_colors.dart';
 import '../viewmodels/scroll_viewmodel.dart';
 import '../widgets/navbar.dart';
@@ -27,56 +28,60 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   Widget build(BuildContext context) {
     final scrollViewModel = context.watch<ScrollViewModel>();
     
-    return Scaffold(
-      body: MouseRegion(
-        onHover: (event) {
-          setState(() {
-            _mousePos = event.localPosition;
-          });
-        },
-        child: Stack(
-          children: [
-            // Cursor Glow Effect
-            Positioned(
-              left: _mousePos.dx - 150,
-              top: _mousePos.dy - 150,
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.primaryAccent.withOpacity(0.15),
-                      Colors.transparent,
-                    ],
+    return SafeArea(
+      child: Scaffold(
+        body: MouseRegion(
+          onHover: (event) {
+            setState(() {
+              _mousePos = event.localPosition;
+            });
+          },
+          child: Stack(
+            children: [
+              // Cursor Glow Effect (Desktop Only)
+              if (!Responsive.isMobile(context))
+                Positioned(
+                  left: _mousePos.dx - 150,
+                  top: _mousePos.dy - 150,
+                  child: Container(
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          AppColors.primaryAccent.withOpacity(0.15),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
                   ),
                 ),
+              SingleChildScrollView(
+                controller: scrollViewModel.scrollController,
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                child: Column(
+                  children: [
+                    HeroSection(key: scrollViewModel.sectionKeys['Hero']),
+                    AboutSection(key: scrollViewModel.sectionKeys['About']),
+                    SkillsSection(key: scrollViewModel.sectionKeys['Skills']),
+                    ProjectsSection(key: scrollViewModel.sectionKeys['Projects']),
+                    ExperienceSection(key: scrollViewModel.sectionKeys['Experience']),
+                    YoutubeSection(key: scrollViewModel.sectionKeys['YouTube']),
+                    TeachingSection(key: scrollViewModel.sectionKeys['Teaching']),
+                    ContactSection(key: scrollViewModel.sectionKeys['Contact']),
+                    const FooterSection(),
+                  ],
+                ),
               ),
-            ),
-            SingleChildScrollView(
-              controller: scrollViewModel.scrollController,
-              child: Column(
-                children: [
-                  HeroSection(key: scrollViewModel.sectionKeys['Hero']),
-                  AboutSection(key: scrollViewModel.sectionKeys['About']),
-                  SkillsSection(key: scrollViewModel.sectionKeys['Skills']),
-                  ProjectsSection(key: scrollViewModel.sectionKeys['Projects']),
-                  ExperienceSection(key: scrollViewModel.sectionKeys['Experience']),
-                  YoutubeSection(key: scrollViewModel.sectionKeys['YouTube']),
-                  TeachingSection(key: scrollViewModel.sectionKeys['Teaching']),
-                  ContactSection(key: scrollViewModel.sectionKeys['Contact']),
-                  const FooterSection(),
-                ],
+              const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Navbar(),
               ),
-            ),
-            const Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Navbar(),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

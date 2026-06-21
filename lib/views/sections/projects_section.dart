@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/utils/responsive_helper.dart';
 import '../../core/constants/app_colors.dart';
 import '../../viewmodels/portfolio_viewmodel.dart';
 import '../../widgets/section_title.dart';
@@ -11,12 +12,14 @@ class ProjectsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<PortfolioViewModel>();
-    final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 768;
-    final isTablet = size.width >= 768 && size.width < 1200;
+    final isMobile = Responsive.isMobile(context);
+    final isTablet = Responsive.isTablet(context);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 100, vertical: 100),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : (isTablet ? 50 : 100),
+        vertical: 100,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -29,9 +32,9 @@ class ProjectsSection extends StatelessWidget {
             itemCount: viewModel.filteredProjects.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: isMobile ? 1 : (isTablet ? 2 : 3),
-              crossAxisSpacing: 30,
+              crossAxisSpacing: isMobile ? 0 : 30,
               mainAxisSpacing: 30,
-              childAspectRatio: 0.85,
+              childAspectRatio: isMobile ? 0.95 : 0.85,
             ),
             itemBuilder: (context, index) {
               return ProjectCard(project: viewModel.filteredProjects[index]);
